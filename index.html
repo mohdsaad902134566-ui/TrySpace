@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DON'T TOUCH RED</title>
+    <link rel="stylesheet" href="css/style.css?v=shopfix1">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="game-container">
+        <!-- Main game canvas for drawing the rocket, obstacles, pickups and bullets -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- HUD shows score, best score, coins and ammo during gameplay -->
+        <div id="hud" class="hidden">
+            <div class="hud-top">
+                <div class="hud-item score-item">SCORE: <span id="hud-score">0</span></div>
+                <div class="hud-item best-item">BEST: <span id="hud-best">0</span></div>
+                <div class="hud-item coins-item">COINS: <span id="hud-coins">0</span></div>
+                <div class="hud-item ammo-item">🔫 AMMO: <span id="hud-ammo">5</span></div>
+            </div>
+        <div id="hud-life" class="hidden">❤️ LIFE: 1</div>
+        <div id="hud-shield" class="hidden">🛡️ SHIELD</div>
+        </div>
+
+        <!-- UI Screens for menu, shop, pause, game over and instructions -->
+        <div id="ui-layer">
+
+            <!-- Start screen with main game actions -->
+            <div id="start-screen" class="screen">
+                <h1 class="title">DON'T TOUCH <span class="danger-text">RED</span></h1>
+                <p class="subtitle">How long can you survive?</p>
+                <div class="button-group">
+                    <button id="btn-play" class="btn btn-large btn-primary">PLAY</button>
+                    <button id="btn-shop" class="btn">SHOP</button>
+                    <button id="btn-how-to" class="btn">HOW TO PLAY</button>
+                    <button id="btn-settings" class="btn">SETTINGS</button>
+                </div>
+            </div>
+
+            <!-- Shop screen for buying ammo and unlocking/equipping rockets -->
+            <div id="shop-screen" class="screen hidden">
+                <div class="shop-content">
+                    <h2 class="screen-title">SHOP 🛒</h2>
+
+                    <div class="shop-layout">
+                        <div class="shop-section">
+                            <div class="shop-panel ammo-panel">
+                                <div class="shop-row shop-currency"><span>🪙 Coins:</span> <span id="shop-coins">0</span></div>
+                                <div class="shop-title-row"><span>🔫 AMMO</span></div>
+                                <div class="shop-row"><span>Current:</span> <span id="shop-ammo-value">5 / 15</span></div>
+                                <div class="shop-row"><span>Capacity:</span> <span id="shop-ammo-capacity">15 / 15</span></div>
+                            </div>
+
+                            <div class="shop-upgrade-box">
+                                <div class="shop-upgrade-title">📦 AMMO STORAGE</div>
+                                <div class="shop-upgrade-copy">+5 STORAGE</div>
+                                <div class="shop-upgrade-copy">COST: <span id="shop-upgrade-cost">100</span> COINS</div>
+                                <button id="btn-upgrade-ammo" class="btn btn-secondary shop-action">UPGRADE</button>
+                            </div>
+
+                            <div class="shop-upgrade-box">
+                                <div class="shop-upgrade-title">🔫 BUY AMMO</div>
+                                <div class="shop-upgrade-copy">+5 AMMO</div>
+                                <div class="shop-upgrade-copy">COST: 20 COINS</div>
+                                <button id="btn-buy-ammo" class="btn btn-primary shop-action">BUY</button>
+                            </div>
+                        </div>
+
+                        <div class="shop-section shop-section-rockets">
+                            <h3 class="shop-subtitle">🚀 ROCKET SKINS</h3>
+                            <div id="shop-rocket-list" class="rocket-list"></div>
+                        </div>
+                    </div>
+
+                    <div id="shop-status" class="shop-status">Ready</div>
+                </div>
+
+                <div class="shop-footer button-group">
+                    <button id="btn-shop-back" class="btn">BACK</button>
+                </div>
+            </div>
+
+            <!-- How to play instructions screen -->
+            <div id="how-to-screen" class="screen hidden">
+                <h2 class="screen-title">HOW TO PLAY</h2>
+                <div class="instructions">
+                    <div class="inst-item">
+                        <span class="inst-icon power-bg"></span>
+                        <div class="inst-text">
+                            <h3>MOVE LEFT</h3>
+                            <p>Click or press LEFT to move the rocket left.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon power-bg"></span>
+                        <div class="inst-text">
+                            <h3>MOVE RIGHT</h3>
+                            <p>Click or press RIGHT to move the rocket right.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon power-bg"></span>
+                        <div class="inst-text">
+                            <h3>FIRE</h3>
+                            <p>Click FIRE or press SPACE to shoot.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon danger-bg"></span>
+                        <div class="inst-text">
+                            <h3>AVOID RED</h3>
+                            <p>Do not touch red obstacles.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon coin-bg"></span>
+                        <div class="inst-text">
+                            <h3>COLLECT COINS</h3>
+                            <p>Collect coins to buy ammo and unlock new rocket styles.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon power-bg"></span>
+                        <div class="inst-text">
+                            <h3>USE SHIELD</h3>
+                            <p>The shield protects you from one collision.</p>
+                        </div>
+                    </div>
+                    <div class="inst-item">
+                        <span class="inst-icon power-bg"></span>
+                        <div class="inst-text">
+                            <h3>SURVIVE LONGER</h3>
+                            <p>The longer you survive, the higher your score.</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="inst-footer">Survive as long as possible.</p>
+                <div class="controls-hint">
+                    <p>Desktop: Arrow Keys / A D</p>
+                    <p>Mobile: Touch LEFT / RIGHT</p>
+                </div>
+                <button id="btn-how-to-back" class="btn">BACK</button>
+            </div>
+
+            <!-- Settings screen for sound and vibration toggles -->
+            <div id="settings-screen" class="screen hidden">
+                <h2 class="screen-title">SETTINGS</h2>
+                <div class="settings-group">
+                    <button id="btn-toggle-sound" class="btn btn-toggle">SOUND: <span
+                            class="toggle-status">ON</span></button>
+                    <button id="btn-toggle-vibration" class="btn btn-toggle">VIBRATION: <span
+                            class="toggle-status">ON</span></button>
+                </div>
+                <button id="btn-settings-back" class="btn">BACK</button>
+            </div>
+
+            <!-- Pause screen for resume or return to home -->
+            <div id="pause-screen" class="screen hidden">
+                <h2 class="screen-title">PAUSED</h2>
+                <div class="button-group">
+                    <button id="btn-resume" class="btn btn-large btn-primary">RESUME</button>
+                    <button id="btn-restart-pause" class="btn btn-danger">RESTART</button>
+                    <button id="btn-home-pause" class="btn">HOME</button>
+                </div>
+            </div>
+
+            <!-- Game over screen shows score, best score and coins -->
+            <div id="game-over-screen" class="screen hidden">
+                <h1 class="title danger-text">GAME OVER</h1>
+                <div class="stats-board">
+                    <div class="stat-row"><span>SCORE:</span> <span id="go-score">0</span></div>
+                    <div class="stat-row"><span>BEST:</span> <span id="go-best">0</span></div>
+                    <div class="stat-row"><span>COINS:</span> <span id="go-coins">0</span></div>
+                </div>
+                <div class="button-group">
+                    <button id="btn-play-again" class="btn btn-large btn-primary">PLAY AGAIN</button>
+                    <button id="btn-revive" class="btn btn-reward">WATCH AD</button>
+                    <button id="btn-home-go" class="btn">HOME</button>
+                </div>
+            </div>
+
+            <!-- Mobile touch controls for moving left/right during gameplay. Fire and pause buttons sit above the canvas in the same overlay layer. -->
+            <div class="mobile-controls">
+                <button id="leftBtn" type="button">◀ LEFT</button>
+                <button id="rightBtn" type="button">RIGHT ▶</button>
+            </div>
+            <button id="btn-pause" class="hidden">⏸</button>
+            <button id="btn-fire" class="hidden">🔥 FIRE</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/game.js"></script>
+</body>
+
+</html>

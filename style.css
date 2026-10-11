@@ -1,0 +1,849 @@
+:root {
+    /* Color Palette */
+    --background: #0f1016;
+    --panel: rgba(25, 27, 38, 0.85);
+    --text: #ffffff;
+    --muted-text: #a0a5bc;
+    --danger: #ff4757;
+    --danger-glow: rgba(255, 71, 87, 0.4);
+    --safe: #2ed573;
+    --coin: #ffa502;
+    --coin-glow: rgba(255, 165, 2, 0.4);
+    --power: #1e90ff;
+    --power-glow: rgba(30, 144, 255, 0.4);
+    --accent: #5352ed;
+    --accent-glow: rgba(83, 82, 237, 0.4);
+    
+    /* UI metrics */
+    --radius: 12px;
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none; /* Prevent text selection during gameplay */
+    -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--background);
+    color: var(--text);
+    font-family: var(--font-main);
+    overflow: hidden; /* Prevent scrolling */
+    touch-action: none; /* Prevent browser gestures */
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #1a1c29 0%, var(--background) 100%);
+}
+
+#game-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: transparent;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+/* =========================
+   Game Layout
+   ========================= */
+
+/* UI overlay layer that sits above the canvas */
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through unless on a button/screen */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen {
+    pointer-events: auto; /* Re-enable clicks for screens */
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: var(--radius);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    min-width: 300px;
+    max-width: 90%;
+    animation: fadeIn 0.3s ease-out;
+}
+
+#shop-screen {
+    width: min(900px, 94vw);
+    max-width: min(900px, 94vw);
+    min-width: 0;
+    max-height: 90vh;
+    padding: 1.2rem 1.2rem 1rem;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.shop-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 0.2rem;
+}
+
+.shop-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.5fr);
+    gap: 1rem;
+    width: 100%;
+    align-items: start;
+}
+
+.shop-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.shop-section-rockets {
+    min-width: 0;
+}
+
+.shop-panel,
+.shop-upgrade-box {
+    background: rgba(0,0,0,0.28);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-sizing: border-box;
+}
+
+.ammo-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shop-title-row {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-align: center;
+    color: var(--text);
+    margin-top: 0.15rem;
+}
+
+.shop-upgrade-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: center;
+}
+
+.shop-upgrade-title {
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--text);
+}
+
+.shop-upgrade-copy {
+    color: var(--muted-text);
+    font-weight: 700;
+}
+
+.shop-action {
+    margin-top: 0.35rem;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.shop-currency {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 0.3rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Typography */
+.title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--muted-text);
+    font-weight: 400;
+}
+
+.screen-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.danger-text { color: var(--danger); text-shadow: 0 0 10px var(--danger-glow); }
+.coin-text { color: var(--coin); text-shadow: 0 0 10px var(--coin-glow); }
+.power-text { color: var(--power); text-shadow: 0 0 10px var(--power-glow); }
+
+/* Buttons */
+.button-group, .settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text);
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: inherit;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:hover, .btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-large {
+    font-size: 1.3rem;
+    padding: 1.2rem 2.5rem;
+}
+
+.btn-primary {
+    background: var(--safe);
+    border-color: var(--safe);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
+}
+
+.btn-primary:hover, .btn-primary:active {
+    background: #39e37f;
+    box-shadow: 0 6px 20px rgba(46, 213, 115, 0.5);
+}
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover { background: #ff5e6d; }
+
+.btn-reward {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.btn-reward:hover { background: #6867f0; }
+
+/* =========================
+   HUD
+   ========================= */
+
+/* Heads-up display for score, best score, coins and ammo */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 20px;
+    pointer-events: none;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.hud-item {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.score-item { color: var(--text); }
+.best-item { color: var(--muted-text); font-size: 1rem; }
+.coins-item { color: var(--coin); }
+.ammo-item { color: #ff9f43; }
+
+#hud-shield {
+    color: var(--power);
+    font-weight: 700;
+    text-shadow: 0 0 10px var(--power-glow);
+    text-align: center;
+    font-size: 1.2rem;
+    background: rgba(30,144,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    align-self: center;
+    border: 1px solid var(--power);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* =========================
+   Mobile Controls
+   ========================= */
+
+/* Pause button sits at the lower-right corner of the play field */
+#btn-pause {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    z-index: 20;
+}
+
+/* Mobile control container sits above the canvas and stays within the game viewport */
+.mobile-controls {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+    pointer-events: none;
+    touch-action: none;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Shared look for the mobile left/right buttons. These match the fire button style. */
+.mobile-controls button {
+    width: 108px;
+    min-width: 108px;
+    height: 60px;
+    min-height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ff7f50, #ff4757);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    box-shadow: 0 8px 18px rgba(255, 71, 87, 0.35);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.mobile-controls button.is-pressed,
+.mobile-controls button:active {
+    background: linear-gradient(180deg, #ff8d6a, #ff5d6d);
+    transform: scale(0.98);
+}
+
+/* =========================
+   Fire Button
+   ========================= */
+
+/* Fire button is anchored above the mobile controls and remains visible during gameplay */
+#btn-fire {
+    position: absolute;
+    right: 20px;
+    bottom: 90px;
+    width: 110px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ff7f50, #ff4757);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 8px 18px rgba(255, 71, 87, 0.35);
+    z-index: 21;
+}
+
+.shop-panel {
+    background: rgba(0,0,0,0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.shop-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.shop-status {
+    min-height: 1.5rem;
+    color: var(--muted-text);
+    font-weight: 700;
+    text-align: center;
+}
+
+.shop-subtitle {
+    color: var(--text);
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    margin-top: 0.1rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.rocket-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.7rem;
+    width: 100%;
+}
+
+.rocket-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 0.75rem 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-align: left;
+    min-width: 0;
+}
+
+.premium-skin-card {
+    background: linear-gradient(180deg, rgba(120, 119, 198, 0.12), rgba(255,255,255,0.04));
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.rocket-tag {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--muted-text);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.rocket-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 54px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    font-size: 2rem;
+    margin-bottom: 0.1rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+.rocket-preview.galaxy { background: radial-gradient(circle at center, rgba(168, 85, 247, 0.35), rgba(59,130,246,0.12) 45%, rgba(15,23,42,0.2)); }
+.rocket-preview.gold { background: radial-gradient(circle at center, rgba(250, 204, 21, 0.28), rgba(120,53,15,0.1) 45%, rgba(15,23,42,0.2)); }
+.rocket-preview.titan { background: radial-gradient(circle at center, rgba(59,130,246,0.18), rgba(91,33,182,0.18) 45%, rgba(15,23,42,0.2)); }
+
+.rocket-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.12rem;
+}
+
+.rocket-name {
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+    font-size: 0.78rem;
+}
+
+.rocket-price {
+    color: var(--coin);
+    font-weight: 700;
+    white-space: normal;
+    font-size: 0.75rem;
+}
+
+.rocket-status {
+    color: var(--muted-text);
+    font-size: 0.8rem;
+    font-weight: 700;
+    min-height: 1.2rem;
+}
+
+.rocket-action {
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--text);
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.rocket-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shop-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.shop-footer .btn {
+    white-space: nowrap;
+}
+
+/* Instructions */
+.instructions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    text-align: left;
+    margin: 1rem 0;
+}
+
+.inst-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.inst-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.danger-bg { background: var(--danger); box-shadow: 0 0 10px var(--danger-glow); }
+.coin-bg { background: var(--coin); border-radius: 50%; box-shadow: 0 0 10px var(--coin-glow); }
+.power-bg { background: var(--power); border-radius: 50%; box-shadow: 0 0 10px var(--power-glow); }
+
+.inst-text h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+}
+.inst-text p {
+    font-size: 0.9rem;
+    color: var(--muted-text);
+}
+
+.inst-footer {
+    font-weight: 700;
+    color: var(--text);
+}
+.controls-hint {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--muted-text);
+}
+
+/* Stats Board (Game Over) */
+.stats-board {
+    background: rgba(0,0,0,0.4);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+}
+.stat-row span:last-child {
+    color: var(--safe);
+}
+.stat-row:nth-child(3) span:last-child {
+    color: var(--coin);
+}
+
+/* ============================================================
+   MOBILE TOUCH & RESPONSIVE STYLES
+   ============================================================ */
+
+/* Canvas: prevent any browser scroll/zoom gestures on the play area */
+#game-canvas {
+    touch-action: none;   /* belt-and-suspenders alongside the JS style set */
+    cursor: pointer;      /* gives a subtle visual hint it's interactive */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+@media (max-height: 800px) {
+    #shop-screen {
+        max-height: 88vh;
+        padding-top: 1rem;
+    }
+
+    .shop-content {
+        gap: 0.75rem;
+    }
+
+    .shop-layout {
+        gap: 0.75rem;
+    }
+
+    .rocket-item {
+        padding: 0.5rem 0.6rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .mobile-controls button {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+@media (max-width: 700px) {
+    #shop-screen {
+        width: min(92vw, 560px);
+        padding: 1rem 0.9rem 0.8rem;
+    }
+
+    .shop-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .rocket-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* --- Small phones (≤ 480px wide, portrait) --- */
+@media (max-width: 480px) {
+    /* Scale down HUD so it fits on narrow screens */
+    .hud-item {
+        font-size: 0.9rem;
+    }
+    .best-item {
+        font-size: 0.8rem;
+    }
+    #hud {
+        padding: 10px 12px;
+    }
+
+    /* Tighten modal screens so they don't overflow */
+    .screen {
+        padding: 1.4rem 1.2rem;
+        gap: 1rem;
+        min-width: unset;
+        width: 92%;
+    }
+
+    .title {
+        font-size: 1.9rem;
+    }
+    .screen-title {
+        font-size: 1.6rem;
+    }
+    .subtitle {
+        font-size: 0.95rem;
+    }
+
+    /* Make buttons tall enough for easy finger tapping */
+    .btn {
+        padding: 0.9rem 1.5rem;
+        font-size: 1rem;
+    }
+    .btn-large {
+        font-size: 1.1rem;
+        padding: 1rem 2rem;
+    }
+
+    /* Shrink stats board text slightly */
+    .stats-board {
+        font-size: 1rem;
+        padding: 1rem;
+    }
+
+    /* Pause button: slightly larger tap target on small screens */
+    #btn-pause {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+        bottom: 16px;
+        right: 16px;
+    }
+
+    #btn-fire {
+        width: 96px;
+        height: 48px;
+        font-size: 0.9rem;
+        bottom: 80px;
+        right: 16px;
+    }
+
+    /* Shield indicator */
+    #hud-shield {
+        font-size: 1rem;
+        padding: 4px 12px;
+    }
+
+    /* Instructions: reduce gap so it all fits */
+    .instructions {
+        gap: 0.9rem;
+    }
+    .inst-text h3 {
+        font-size: 1rem;
+    }
+    .inst-text p {
+        font-size: 0.8rem;
+    }
+
+    #shop-screen {
+        width: min(94vw, 420px);
+        padding: 0.9rem 0.75rem 0.75rem;
+    }
+
+    .rocket-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- Very narrow phones (≤ 360px) --- */
+@media (max-width: 360px) {
+    .title {
+        font-size: 1.6rem;
+    }
+    .btn {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .screen {
+        padding: 1.2rem 1rem;
+        width: 96%;
+    }
+}
+
+/* --- Landscape on mobile: keep everything visible with reduced height --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .screen {
+        padding: 1rem;
+        gap: 0.7rem;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    .title {
+        font-size: 1.6rem;
+        margin-bottom: 0;
+    }
+    .button-group,
+    .settings-group {
+        gap: 0.6rem;
+        margin-top: 0.5rem;
+    }
+    .btn {
+        padding: 0.7rem 1.4rem;
+        font-size: 0.95rem;
+    }
+    .instructions {
+        gap: 0.7rem;
+        margin: 0.5rem 0;
+    }
+    #hud {
+        padding: 8px 12px;
+    }
+    .hud-item {
+        font-size: 0.85rem;
+    }
+}
